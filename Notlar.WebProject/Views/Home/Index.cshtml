@@ -1,0 +1,211 @@
+﻿@*// @model List<NotProjesi.WebProject.Models.NoteResponseModel>*@
+    <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+    <html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no" />
+        <title>Binary Tree Structure</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous" />
+        <link href="~/css/style.css" rel="stylesheet" />
+    </head>
+    <body>
+        @*<div class="wrapper">
+            <a class="add-box">
+                <div class="icon" id="myBtn"><i class="uil uil-plus"></i>+</div>
+
+            </a>
+        </div>*@
+        <button type="submit" id="myBtn" class="btn btn-secondary">Yeni Not Ekle</button>
+
+        <div class="modal" tabindex="-1" role="dialog" id="modal">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Yeni Not Ekle</h5>
+                    </div>
+                    <div class="modal-body">
+
+                        <form>
+                            <div class="form-group">
+                                <input type="text" class="form-control" id="baslikid"  hidden="hidden"/>
+                                <label for="exampleFormControlSelect1">Parent</label>
+                                <select class="form-control" id="pid">
+                                    <option value="1">1</option>
+                                    <option>2</option>
+                                    <option>3</option>
+                                    <option>4</option>
+                                    <option>5</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="exampleFormControlInput1">Başlık</label>
+                                <input type="text" class="form-control" id="baslik" />
+                            </div>
+                            <div class="form-group">
+                                <label for="exampleFormControlTextarea1">Açıklama</label>
+                                <textarea class="form-control" id="icerik" rows="3"></textarea>
+                            </div>
+                        </form>
+
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-danger" id="sil" hidden="true" onclick="sil()">Sil</button>
+                        <button type="button" class="btn btn-primary" id="kaydet" onclick="kaydet()">Kaydet</button>
+
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal" id="kapat">Kapat</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+       
+        <div class="container">
+            <div class="row">
+                <div class="tree" id="nots">
+
+                </div>
+            </div>
+        </div>
+
+
+    </body>
+</html>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+<script type="text/javascript">
+
+    const addBox = document.querySelector(".add-box");
+
+    function TreeGet() {
+        $.get("/Home/VerileriGetir", function (nots) {
+            $("#nots").empty();
+            $("#pid").empty();
+            var html = recursiveMethod(0, nots);
+            $("#nots").append(html);
+            var html2 = recursiveMethodCombo(nots);
+            $("#pid").append(html2);
+        });
+
+    };
+
+    $(function () {
+        TreeGet();
+    });
+    function recursiveMethodCombo(nots) {
+        var html = "<option value=0>Ana Not</option>";
+        nots.forEach(function (not) {
+            html += "<option value=" + not.id + ">" + not.baslik + "</option>"
+        });
+       return html;
+    };
+    function recursiveMethod(id, nots) {
+        var notsHtml = "";
+        var parentNots = new Array();
+        parentNots = nots.filter(function (temp) {
+            return temp.pid == id;
+        });
+     
+
+        if (parentNots.some(item => item.pid == id)) {
+     
+            notsHtml = `<ul>`;
+            parentNots.forEach(function (not) {
+            
+                if (!nots.some(item => item.pid == not.id)) {
+                    notsHtml += `<li><a href="#" id="` + not.id + `"  data-aciklama=` + not.detay + ` data-baslik=` + not.baslik + `  data-pid=` + not.pid +` class="treenots" onclick="treeClick(this)"><span>` + not.baslik + `</span></a></li>`;
+                } else {
+                    notsHtml += `<li><a href="#" id="` + not.id + `"  data-aciklama=` + not.detay + ` data-baslik=` + not.baslik + `   data-pid=` + not.pid +` class="treenots" onclick="treeClick(this)"><span>` + not.baslik + `</span></a>`;
+                    notsHtml += recursiveMethod(not.id, nots);
+                    notsHtml += `</li>`;
+                }
+            });
+            notsHtml += `</ul>`;
+        }
+
+        return notsHtml;
+    }
+    function treeClick(obj) {
+        id = obj.getAttribute("id");
+        $('#baslikid').val(id);
+
+       
+        $('#pid').val($("#" + id).data('pid'));
+        $('#baslik').val($("#" + id).data('baslik'));
+        $('#icerik').val($("#" + id).data('aciklama'));
+        $("#sil").attr("hidden", false);
+        modal.style.display = "block";
+    }
+
+    
+    var addBtn = document.getElementById("myBtn");
+    var closeBtn = document.getElementById("kapat");
+    var modal = document.querySelector(".modal");
+
+
+ 
+    addBtn.onclick = function () {
+        $("#sil").attr("hidden", true);
+        modal.style.display = "block";
+    };
+
+    closeBtn.onclick = function () {
+        verileriTemizle();
+        modal.style.display = "none";
+    };
+
+    function verileriTemizle() {
+        $('#pid').val(0);
+        $('#baslikId').val(0);
+        $('#baslik').val("");
+        $('#icerik').val("");
+    }
+    function kaydet() {
+        $.ajax({
+            url: 'Home/AddNote',
+            type: 'POST',
+            data: {
+                Pid: $('#pid').val(),
+                Title: $('#baslik').val(),
+                Contentt: $('#icerik').val(),
+                Id: $('#baslikid').val()
+            },
+            dataType: 'json',
+            success: function () {
+                TreeGet();
+                alert("işlem başarılı");
+                $("#modal #kapat").click();
+                verileriTemizle();
+          
+            }
+        });
+
+
+    }
+
+    function sil() {
+        $.ajax({
+            url: 'Home/DeleteNote',
+            type: 'POST',
+            data: {
+                Id: $('#baslikid').val(),
+                Pid: $('#pid').val()
+            },
+            dataType: 'json',
+            success: function () {
+                TreeGet();
+                alert("Silme işlemi başarılı");
+                $("#modal #kapat").click();
+                verileriTemizle();
+
+            }
+        });
+    }
+            
+    
+
+    
+
+
+</script>
+
+
