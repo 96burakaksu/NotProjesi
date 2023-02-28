@@ -15,7 +15,7 @@
 
             </a>
         </div>*@
-        <button type="submit" id="myBtn" class="btn btn-secondary">Yeni Not Ekle</button>
+        <button type="button" id="myBtn" class="btn btn-secondary">Yeni Not Ekle</button>
 
         <div class="modal" tabindex="-1" role="dialog" id="modal">
             <div class="modal-dialog" role="document">
@@ -26,15 +26,11 @@
                     <div class="modal-body">
 
                         <form>
+                            <input type="text" class="form-control" id="baslikid" hidden="hidden" />
                             <div class="form-group">
-                                <input type="text" class="form-control" id="baslikid"  hidden="hidden"/>
+
                                 <label for="exampleFormControlSelect1">Parent</label>
                                 <select class="form-control" id="pid">
-                                    <option value="1">1</option>
-                                    <option>2</option>
-                                    <option>3</option>
-                                    <option>4</option>
-                                    <option>5</option>
                                 </select>
                             </div>
                             <div class="form-group">
@@ -127,8 +123,6 @@
     function treeClick(obj) {
         id = obj.getAttribute("id");
         $('#baslikid').val(id);
-
-       
         $('#pid').val($("#" + id).data('pid'));
         $('#baslik').val($("#" + id).data('baslik'));
         $('#icerik').val($("#" + id).data('aciklama'));
@@ -144,6 +138,7 @@
 
  
     addBtn.onclick = function () {
+      
         $("#sil").attr("hidden", true);
         modal.style.display = "block";
     };
@@ -154,11 +149,12 @@
     };
 
     function verileriTemizle() {
+
         $('#pid').val(0);
-        $('#baslikId').val(0);
+        $('#baslikid').val(0);
         $('#baslik').val("");
         $('#icerik').val("");
-    }
+    };
     function kaydet() {
         $.ajax({
             url: 'Home/AddNote',
@@ -180,7 +176,7 @@
         });
 
 
-    }
+    };
 
     function sil() {
         $.ajax({
